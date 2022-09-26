@@ -47,7 +47,7 @@ This repository contains a highly configurable two-stage-tracker that adjusts to
 
 1. Clone the repository recursively:
 
-`git clone --recurse-submodules https://github.com/mikel-brostrom/Yolov5_StrongSORT_OSNet.git`
+`git clone --recurse-submodules git@github.com:PCu1106/Virtual-Tactile-Paving2.git`
 
 If you already cloned and forgot to use `--recurse-submodules` you can run `git submodule update --init`
 
