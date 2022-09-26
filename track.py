@@ -36,7 +36,7 @@ from yolov5.utils.plots import Annotator, colors, save_one_box
 from strong_sort.utils.parser import get_config
 from strong_sort.strong_sort import StrongSORT
 
-# remove duplicated stream handler to avoid duplicated logging
+# remove duplicated stream handler to avoid duplicated logging.
 logging.getLogger().removeHandler(logging.getLogger().handlers[0])
 
 @torch.no_grad()
@@ -71,6 +71,8 @@ def run(
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
         eval=False,  # run multi-gpu eval
+        tactile_paving=None,
+        alert_zone=None
 ):
 
     source = str(source)
@@ -247,11 +249,23 @@ def run(
 
             # Stream results
             im0 = annotator.result()
+            if tactile_paving:
+                start=0
+                while start < len(tactile_paving)-1:
+                    cv2.line(im0, tactile_paving[start], tactile_paving[start+1], (255, 0, 0), 2)
+                    start+=1
+                cv2.line(im0, tactile_paving[start], tactile_paving[0], (255, 0, 0), 2)
+            if alert_zone:
+                start=0
+                while start < len(alert_zone)-1:
+                    cv2.line(im0, alert_zone[start], alert_zone[start+1], (0, 0, 255), 2)
+                    start+=1
+                cv2.line(im0, alert_zone[start], alert_zone[0], (0, 0, 255), 2)
             if show_vid:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
 
-            # Save results (image with detections)
+            # Save results (image with detections).
             if save_vid:
                 if vid_path[i] != save_path:  # new video
                     vid_path[i] = save_path
@@ -278,6 +292,10 @@ def run(
     if update:
         strip_optimizer(yolo_weights)  # update model (to fix SourceChangeWarning)
 
+def tuple_type(strings):
+    strings = strings.replace("(", "").replace(")", "")
+    mapped_int = map(int, strings.split(","))
+    return tuple(mapped_int)
 
 def parse_opt():
     parser = argparse.ArgumentParser()
@@ -312,6 +330,8 @@ def parse_opt():
     parser.add_argument('--half', action='store_true', help='use FP16 half-precision inference')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
     parser.add_argument('--eval', action='store_true', help='run evaluation')
+    parser.add_argument('--tactile-paving', nargs='+', type=tuple_type, help='4 coordinates of tactile paving area: --tactile-paving (10, 20) (10, 30) (90, 25) (95, 35)')
+    parser.add_argument('--alert-zone', nargs='+', type=tuple_type, help='4 coordinates of alert zone: --alert-zone (10, 20) (10, 30) (90, 25) (95, 35)')
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
     print_args(vars(opt))
