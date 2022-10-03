@@ -36,6 +36,8 @@ from yolov5.utils.plots import Annotator, colors, save_one_box
 from strong_sort.utils.parser import get_config
 from strong_sort.strong_sort import StrongSORT
 
+import project113
+
 # remove duplicated stream handler to avoid duplicated logging.
 logging.getLogger().removeHandler(logging.getLogger().handlers[0])
 
@@ -143,6 +145,7 @@ def run(
     model.warmup(imgsz=(1 if pt else nr_sources, 3, *imgsz))  # warmup
     dt, seen = [0.0, 0.0, 0.0, 0.0], 0
     curr_frames, prev_frames = [None] * nr_sources, [None] * nr_sources
+    target_id = None
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
@@ -240,7 +243,8 @@ def run(
                             if save_crop:
                                 txt_file_name = txt_file_name if (isinstance(path, list) and len(path) > 1) else ''
                                 save_one_box(bboxes, imc, file=save_dir / 'crops' / txt_file_name / names[c] / f'{id}' / f'{p.stem}.jpg', BGR=True)
-
+                target_id = project113.get_target_id(target_id, outputs, alert_zone)
+                print(f"target_id:{target_id}")
                 LOGGER.info(f'{s}Done. YOLO:({t3 - t2:.3f}s), StrongSORT:({t5 - t4:.3f}s)')
 
             else:
@@ -249,18 +253,8 @@ def run(
 
             # Stream results
             im0 = annotator.result()
-            if tactile_paving:
-                start=0
-                while start < len(tactile_paving)-1:
-                    cv2.line(im0, tactile_paving[start], tactile_paving[start+1], (255, 0, 0), 2)
-                    start+=1
-                cv2.line(im0, tactile_paving[start], tactile_paving[0], (255, 0, 0), 2)
-            if alert_zone:
-                start=0
-                while start < len(alert_zone)-1:
-                    cv2.line(im0, alert_zone[start], alert_zone[start+1], (0, 0, 255), 2)
-                    start+=1
-                cv2.line(im0, alert_zone[start], alert_zone[0], (0, 0, 255), 2)
+            project113.draw_tactile_paving(im0, tactile_paving)
+            project113.draw_alert_zone(im0, alert_zone)
             if show_vid:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
