@@ -1,3 +1,4 @@
 .vscode/
 weights/
 runs/
+__pycache__/
