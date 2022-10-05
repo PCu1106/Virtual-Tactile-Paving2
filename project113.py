@@ -33,6 +33,9 @@ def is_in_poly(p, poly): #https://www.796t.com/article.php?id=190303
     return flag
 
 def draw_tactile_paving(im0, tactile_paving):
+    '''
+    Give the vertices of tactile_paving clockwise, then draw it on the output image.
+    '''
     if tactile_paving:
         start=0
         while start < len(tactile_paving)-1:
@@ -41,6 +44,9 @@ def draw_tactile_paving(im0, tactile_paving):
         cv2.line(im0, tactile_paving[start], tactile_paving[0], (255, 0, 0), 2)
         
 def draw_alert_zone(im0, alert_zone):
+    '''
+    Give the vertices of alert_zone clockwise, then draw it on the output image.
+    '''
     if alert_zone:
         start=0
         while start < len(alert_zone)-1:
@@ -49,6 +55,14 @@ def draw_alert_zone(im0, alert_zone):
         cv2.line(im0, alert_zone[start], alert_zone[0], (0, 0, 255), 2)
 
 def get_target_id(target_id, outputs, alert_zone):
+    '''
+    Function of the method we determine the target id.
+    We choose a random person in the alert_zone as the target at first.
+    If the person is still in the alert_zone in following frames, the target_id keep the same.
+    If the person isn't in the alert_zone for a frame, the target change to another random person.
+
+    If there is no person in alert_zone, target_id will be None.
+    '''
     ids = [output[4] for output in outputs[0]]
     if target_id in ids:
         bbox = outputs[0][ids.index(target_id)][0:4]
@@ -57,8 +71,9 @@ def get_target_id(target_id, outputs, alert_zone):
             return target_id
     else:
         for output in outputs[0]:
-            bbox = output[0:4]
-            representational_point = ((bbox[0] + (bbox[2] - bbox[0]) / 2), bbox[3])
-            if is_in_poly(representational_point, alert_zone):
-                return output[4]
+            if output[5] == 0: #only person can be the target
+                bbox = output[0:4]
+                representational_point = ((bbox[0] + (bbox[2] - bbox[0]) / 2), bbox[3])
+                if is_in_poly(representational_point, alert_zone):
+                    return output[4]
     return None
