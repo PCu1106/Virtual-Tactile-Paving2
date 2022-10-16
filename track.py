@@ -255,6 +255,7 @@ def run(
             im0 = annotator.result()
             project113.draw_tactile_paving(im0, tactile_paving)
             project113.draw_alert_zone(im0, alert_zone)
+            project113.obstacledetection(outputs, target_id)
             if show_vid:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond

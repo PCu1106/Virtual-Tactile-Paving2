@@ -77,3 +77,26 @@ def get_target_id(target_id, outputs, alert_zone):
                 if is_in_poly(representational_point, alert_zone):
                     return output[4]
     return None
+
+def printoutputs(outputs):
+    for output in outputs:
+        print(output)
+
+def obstacledetection(outputs,target_id):
+    print("===========================================")
+    for det in outputs[0]:       
+        if(det[4]==target_id):
+            a = np.array([(det[0] + (det[2] - det[0]) / 2), det[3]])
+            circus_target=(det[2] - det[0])
+        else:
+            continue
+        for det2 in outputs[0]:
+            if(det2[4]==target_id):
+                continue
+            circus_obstacle=(det2[2] - det2[0])
+            b = np.array([(det2[0] + (det2[2] - det2[0]) / 2), det2[3]])
+            dist = np.linalg.norm(a - b)
+            if(dist<=circus_target+circus_obstacle):
+                print("Obstacle Dectect!!!!!")
+    print("===========================================")
+
