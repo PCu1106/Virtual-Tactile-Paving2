@@ -146,6 +146,8 @@ def run(
     dt, seen = [0.0, 0.0, 0.0, 0.0], 0
     curr_frames, prev_frames = [None] * nr_sources, [None] * nr_sources
     target_id = None
+    his_representational_point = None
+    representational_point = None
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
@@ -243,7 +245,12 @@ def run(
                             if save_crop:
                                 txt_file_name = txt_file_name if (isinstance(path, list) and len(path) > 1) else ''
                                 save_one_box(bboxes, imc, file=save_dir / 'crops' / txt_file_name / names[c] / f'{id}' / f'{p.stem}.jpg', BGR=True)
-                target_id = project113.get_target_id(target_id, outputs, alert_zone)
+                his_representational_point = representational_point              
+                target_id,representational_point = project113.get_target_id(target_id, outputs, alert_zone)
+                if(target_id != None):
+                    project113.alert(representational_point, his_representational_point , tactile_paving)
+                else:
+                    his_representational_point = None
                 print(f"target_id:{target_id}")
                 LOGGER.info(f'{s}Done. YOLO:({t3 - t2:.3f}s), StrongSORT:({t5 - t4:.3f}s)')
 
@@ -255,6 +262,7 @@ def run(
             im0 = annotator.result()
             project113.draw_tactile_paving(im0, tactile_paving)
             project113.draw_alert_zone(im0, alert_zone)
+            project113.obstacledetection(outputs, target_id)
             if show_vid:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
