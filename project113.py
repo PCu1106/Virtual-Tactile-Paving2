@@ -68,15 +68,15 @@ def get_target_id(target_id, outputs, alert_zone):
         bbox = outputs[0][ids.index(target_id)][0:4]
         representational_point = ((bbox[0] + (bbox[2] - bbox[0]) / 2), bbox[3])
         if is_in_poly(representational_point, alert_zone):
-            return target_id
+            return (target_id , representational_point)
     else:
         for output in outputs[0]:
             if output[5] == 0: #only person can be the target
                 bbox = output[0:4]
                 representational_point = ((bbox[0] + (bbox[2] - bbox[0]) / 2), bbox[3])
                 if is_in_poly(representational_point, alert_zone):
-                    return output[4]
-    return None
+                    return (output[4], representational_point)
+    return (None,None)
 
 def printoutputs(outputs):
     for output in outputs:
@@ -100,3 +100,29 @@ def obstacledetection(outputs,target_id):
                 print("Obstacle Dectect!!!!!")
     print("===========================================")
 
+def alert(representational_point, his_representational_point , tactile_paving):
+    if(his_representational_point and is_in_poly(his_representational_point, tactile_paving)):
+        print("his_representational_point = " , his_representational_point)
+        print("representational_point = " , representational_point)
+        line_right = tactile_paving[0:2]
+        line_left = tactile_paving[2:4]
+        if(his_representational_point[1] > representational_point[1]):
+            tmp = (line_right[0][0] - line_right[1][0]) / (line_right[0][1] - line_right[1][1]) * (representational_point[1] - line_right[1][1]) + line_right[1][0]
+            if(tmp < representational_point[0]):
+                print("on the right side of right line.")
+                return
+            tmp = (line_left[0][0] - line_left[1][0]) / (line_left[0][1] - line_left[1][1]) * (representational_point[1] - line_left[1][1]) + line_left[1][0]
+            if(tmp > representational_point[0]):
+                print("on the left side of left line.")
+                return
+            print("on the tactile tile.")
+        else:
+            tmp = (line_right[0][0] - line_right[1][0]) / (line_right[0][1] - line_right[1][1]) * (representational_point[1] - line_right[1][1]) + line_right[1][0]
+            if(tmp < representational_point[0]):
+                print("on the left side of right line.")
+                return
+            tmp = (line_left[0][0] - line_left[1][0]) / (line_left[0][1] - line_left[1][1]) * (representational_point[1] - line_left[1][1]) + line_left[1][0]
+            if(tmp > representational_point[0]):
+                print("on the right side of left line.")
+                return
+            print("on the tactile tile.")
