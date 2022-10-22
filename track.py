@@ -44,8 +44,8 @@ logging.getLogger().removeHandler(logging.getLogger().handlers[0])
 
 #create client socket
 from client import client
-HOST = '0.0.0.0'
-PORT = 9999
+HOST = '127.0.0.1'
+PORT = 8001
 cli = client()
 cli.set_connection((HOST , PORT))
 
