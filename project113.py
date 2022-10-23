@@ -99,7 +99,9 @@ def obstacledetection(outputs,target_id, cli):
             if(dist<=circus_target+circus_obstacle):
                 print("Obstacle Dectect!!!!!")
                 cli.send_alert("obstacle detect")
+                return "OBS"
     print("===========================================")
+    return ""
 
 def alert(representational_point, his_representational_point , tactile_paving, cli):
     if(his_representational_point and is_in_poly(his_representational_point, tactile_paving)):
@@ -107,27 +109,31 @@ def alert(representational_point, his_representational_point , tactile_paving, c
         print("representational_point = " , representational_point)
         line_right = tactile_paving[0:2]
         line_left = tactile_paving[2:4]
-        if(his_representational_point[1] > representational_point[1]):
+        if(his_representational_point[1] > representational_point[1]):# go
             tmp = (line_right[0][0] - line_right[1][0]) / (line_right[0][1] - line_right[1][1]) * (representational_point[1] - line_right[1][1]) + line_right[1][0]
             if(tmp < representational_point[0]):
                 print("on the right side of right line.")
                 cli.send_alert("stay left")
-                return
+                return "RR"
             tmp = (line_left[0][0] - line_left[1][0]) / (line_left[0][1] - line_left[1][1]) * (representational_point[1] - line_left[1][1]) + line_left[1][0]
             if(tmp > representational_point[0]):
                 print("on the left side of left line.")
                 cli.send_alert("stay right")
-                return
+                return "LL"
             print("on the tactile tile.")
-        else:
+        else: # come
             tmp = (line_right[0][0] - line_right[1][0]) / (line_right[0][1] - line_right[1][1]) * (representational_point[1] - line_right[1][1]) + line_right[1][0]
             if(tmp < representational_point[0]):
                 print("on the left side of right line.")
                 cli.send_alert("stay right")
-                return
+                return "LR"
             tmp = (line_left[0][0] - line_left[1][0]) / (line_left[0][1] - line_left[1][1]) * (representational_point[1] - line_left[1][1]) + line_left[1][0]
             if(tmp > representational_point[0]):
                 print("on the right side of left line.")
                 cli.send_alert("stay left")
-                return
+                return "RL"
             print("on the tactile tile.")
+    return ""
+
+def put_alert_msg(im0, alert_msg):
+    cv2.putText(im0, alert_msg, (0, im0.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1, cv2.LINE_AA)

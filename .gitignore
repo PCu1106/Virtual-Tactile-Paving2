@@ -3,3 +3,4 @@ weights/
 runs/
 __pycache__/
 *.pt
+*.mp4

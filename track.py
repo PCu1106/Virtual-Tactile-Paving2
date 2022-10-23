@@ -157,6 +157,7 @@ def run(
     his_representational_point = None
     representational_point = None
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
+        alert_msg = ""
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
         im = im.half() if half else im.float()  # uint8 to fp16/32
@@ -256,7 +257,7 @@ def run(
                 his_representational_point = representational_point              
                 target_id,representational_point = project113.get_target_id(target_id, outputs, alert_zone)
                 if(target_id != None):
-                    project113.alert(representational_point, his_representational_point , tactile_paving, cli)
+                    alert_msg += project113.alert(representational_point, his_representational_point , tactile_paving, cli)
                 else:
                     his_representational_point = None
                 print(f"target_id:{target_id}")
@@ -270,7 +271,8 @@ def run(
             im0 = annotator.result()
             project113.draw_tactile_paving(im0, tactile_paving)
             project113.draw_alert_zone(im0, alert_zone)
-            project113.obstacledetection(outputs, target_id, cli)
+            alert_msg += project113.obstacledetection(outputs, target_id, cli)
+            project113.put_alert_msg(im0, alert_msg)
             if show_vid:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
