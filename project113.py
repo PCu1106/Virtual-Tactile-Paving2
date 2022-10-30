@@ -3,7 +3,6 @@ import numpy as np
 
 def is_in_poly(p, poly): #https://www.796t.com/article.php?id=190303
     """
-
     :param p: [x, y]
     :param poly: [[], [], [], [], ...]
     :return:
@@ -54,13 +53,36 @@ def draw_alert_zone(im0, alert_zone):
             start+=1
         cv2.line(im0, alert_zone[start], alert_zone[0], (0, 0, 255), 2)
 
+def draw_left_zone(im0, left_zone):
+    '''
+    Give the vertices of alert_zone clockwise, then draw it on the output image.
+    '''
+    if left_zone:
+        start=0
+        while start < len(left_zone)-1:
+            cv2.line(im0, left_zone[start], left_zone[start+1], (0, 255, 0), 2)
+            start+=1
+        cv2.line(im0, left_zone[start], left_zone[0], (0, 255, 0), 2)
+
+def draw_right_zone(im0, right_zone):
+    '''
+    Give the vertices of alert_zone clockwise, then draw it on the output image.
+    '''
+    if right_zone:
+        start=0
+        while start < len(right_zone)-1:
+            cv2.line(im0, right_zone[start], right_zone[start+1], (0, 255, 0), 2)
+            start+=1
+        cv2.line(im0, right_zone[start], right_zone[0], (0, 255, 0), 2)
+
+
+
 def get_target_id(target_id, outputs, alert_zone):
     '''
     Function of the method we determine the target id.
     We choose a random person in the alert_zone as the target at first.
     If the person is still in the alert_zone in following frames, the target_id keep the same.
     If the person isn't in the alert_zone for a frame, the target change to another random person.
-
     If there is no person in alert_zone, target_id will be None.
     '''
     ids = [output[4] for output in outputs[0]]
@@ -103,32 +125,26 @@ def obstacledetection(outputs,target_id, cli):
     print("===========================================")
     return ""
 
-def alert(representational_point, his_representational_point , tactile_paving, cli):
+def alert(representational_point, his_representational_point ,right_zone, left_zone, tactile_paving, cli):
     if(his_representational_point and is_in_poly(his_representational_point, tactile_paving)):
         print("his_representational_point = " , his_representational_point)
         print("representational_point = " , representational_point)
-        line_right = tactile_paving[0:2]
-        line_left = tactile_paving[2:4]
         if(his_representational_point[1] > representational_point[1]):# go
-            tmp = (line_right[0][0] - line_right[1][0]) / (line_right[0][1] - line_right[1][1]) * (representational_point[1] - line_right[1][1]) + line_right[1][0]
-            if(tmp < representational_point[0]):
+            if(is_in_poly(representational_point, right_zone)):
                 print("on the right side of right line.")
                 cli.send_alert("stay left")
                 return "RR"
-            tmp = (line_left[0][0] - line_left[1][0]) / (line_left[0][1] - line_left[1][1]) * (representational_point[1] - line_left[1][1]) + line_left[1][0]
-            if(tmp > representational_point[0]):
+            if(is_in_poly(representational_point, left_zone)):
                 print("on the left side of left line.")
                 cli.send_alert("stay right")
                 return "LL"
             print("on the tactile tile.")
         else: # come
-            tmp = (line_right[0][0] - line_right[1][0]) / (line_right[0][1] - line_right[1][1]) * (representational_point[1] - line_right[1][1]) + line_right[1][0]
-            if(tmp < representational_point[0]):
+            if(is_in_poly(representational_point, left_zone)):
                 print("on the left side of right line.")
                 cli.send_alert("stay right")
                 return "LR"
-            tmp = (line_left[0][0] - line_left[1][0]) / (line_left[0][1] - line_left[1][1]) * (representational_point[1] - line_left[1][1]) + line_left[1][0]
-            if(tmp > representational_point[0]):
+            if(is_in_poly(representational_point, right_zone)):
                 print("on the right side of left line.")
                 cli.send_alert("stay left")
                 return "RL"

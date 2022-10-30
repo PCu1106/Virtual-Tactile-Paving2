@@ -42,7 +42,7 @@ import project113
 # remove duplicated stream handler to avoid duplicated logging.
 logging.getLogger().removeHandler(logging.getLogger().handlers[0])
 
-#create client socket
+# create client socket
 from client import client
 HOST = '127.0.0.1'
 PORT = 8001
@@ -82,7 +82,9 @@ def run(
         dnn=False,  # use OpenCV DNN for ONNX inference
         eval=False,  # run multi-gpu eval
         tactile_paving=None,
-        alert_zone=None
+        alert_zone=None,
+        left_zone=None,
+        right_zone=None
 ):
 
     source = str(source)
@@ -257,7 +259,7 @@ def run(
                 his_representational_point = representational_point              
                 target_id,representational_point = project113.get_target_id(target_id, outputs, alert_zone)
                 if(target_id != None):
-                    alert_msg += project113.alert(representational_point, his_representational_point , tactile_paving, cli)
+                    alert_msg += project113.alert(representational_point, his_representational_point , right_zone, left_zone, tactile_paving, cli)
                 else:
                     his_representational_point = None
                 print(f"target_id:{target_id}")
@@ -269,8 +271,10 @@ def run(
 
             # Stream results
             im0 = annotator.result()
-            project113.draw_tactile_paving(im0, tactile_paving)
             project113.draw_alert_zone(im0, alert_zone)
+            project113.draw_right_zone(im0, right_zone)
+            project113.draw_left_zone(im0, left_zone)
+            project113.draw_tactile_paving(im0, tactile_paving)
             alert_msg += project113.obstacledetection(outputs, target_id, cli)
             project113.put_alert_msg(im0, alert_msg)
             if show_vid:
@@ -344,6 +348,8 @@ def parse_opt():
     parser.add_argument('--eval', action='store_true', help='run evaluation')
     parser.add_argument('--tactile-paving', nargs='+', type=tuple_type, help='4 coordinates of tactile paving area: --tactile-paving (10, 20) (10, 30) (90, 25) (95, 35)')
     parser.add_argument('--alert-zone', nargs='+', type=tuple_type, help='4 coordinates of alert zone: --alert-zone (10, 20) (10, 30) (90, 25) (95, 35)')
+    parser.add_argument('--right-zone', nargs='+', type=tuple_type, help='4 coordinates of right zone area: --right-zone (10, 20) (10, 30) (90, 25) (95, 35)')
+    parser.add_argument('--left-zone', nargs='+', type=tuple_type, help='4 coordinates of left zone: --left-zone (10, 20) (10, 30) (90, 25) (95, 35)')
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
     print_args(vars(opt))
