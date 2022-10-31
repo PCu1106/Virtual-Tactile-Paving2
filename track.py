@@ -158,8 +158,11 @@ def run(
     target_id = None
     his_representational_point = None
     representational_point = None
+    flag = 5
+    obstacle = -1
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
         alert_msg = ""
+        temp_alert_msg = ""
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
         im = im.half() if half else im.float()  # uint8 to fp16/32
@@ -275,7 +278,8 @@ def run(
             project113.draw_right_zone(im0, right_zone)
             project113.draw_left_zone(im0, left_zone)
             project113.draw_tactile_paving(im0, tactile_paving)
-            alert_msg += project113.obstacledetection(outputs, target_id, cli)
+            temp_alert_msg, flag, obstacle = project113.obstacledetection(outputs, target_id, cli, representational_point, his_representational_point, flag, obstacle)
+            alert_msg += temp_alert_msg
             project113.put_alert_msg(im0, alert_msg)
             if show_vid:
                 cv2.imshow(str(p), im0)

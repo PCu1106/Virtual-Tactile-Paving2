@@ -104,26 +104,63 @@ def printoutputs(outputs):
     for output in outputs:
         print(output)
 
-def obstacledetection(outputs,target_id, cli):
+def obstacledetection(outputs,target_id, cli, representational_point, his_representational_point, flag, obstacle):
     print("===========================================")
-    for det in outputs[0]:       
-        if(det[4]==target_id):
-            a = np.array([(det[0] + (det[2] - det[0]) / 2), det[3]])
-            circus_target=(det[2] - det[0])
-        else:
-            continue
-        for det2 in outputs[0]:
-            if(det2[4]==target_id):
+    if(his_representational_point==None):
+        return "", flag, obstacle
+    if(representational_point==None):
+        return "", flag, obstacle
+    if(his_representational_point[1] > representational_point[1]): #far from camera 
+        if(flag <= 10):
+          flag = flag + 1 
+    elif(his_representational_point[1] < representational_point[1]): #close to camera 
+        if(flag >= 0):
+           flag = flag - 1
+    if(flag > 6): #far from camera 
+        for det in outputs[0]:       
+            if(det[4]==target_id):
+                a = np.array([(det[0] + (det[2] - det[0]) / 2), det[3]])
+                circus_target=(det[2] - det[0])
+            else:
                 continue
-            circus_obstacle=(det2[2] - det2[0])
-            b = np.array([(det2[0] + (det2[2] - det2[0]) / 2), det2[3]])
-            dist = np.linalg.norm(a - b)
-            if(dist<=circus_target+circus_obstacle):
-                print("Obstacle Dectect!!!!!")
-                cli.send_alert("obstacle detect")
-                return "OBS"
+            for det2 in outputs[0]:
+                if(det2[4]==target_id):
+                    continue
+                circus_obstacle=(det2[2] - det2[0])
+                b = np.array([(det2[0] + (det2[2] - det2[0]) / 2), det2[3]])
+                if(b[1] > a[1]):
+                    continue
+                dist = np.linalg.norm(a - b)
+                if(dist<=(circus_target+circus_obstacle) / 1.8):
+                    print("Obstacle Dectect!!!!!")
+                    if((obstacle == -1) or (obstacle != det2[4])):
+                        obstacle = det2[4]
+                        cli.send_alert("obstacle detect")
+                    return "OBS", flag, obstacle
+    elif(flag < 4): #close to camera 
+         for det in outputs[0]:       
+            if(det[4]==target_id):
+                a = np.array([(det[0] + (det[2] - det[0]) / 2), det[3]])
+                circus_target=(det[2] - det[0])
+            else:
+                continue
+            for det2 in outputs[0]:
+                if(det2[4]==target_id):
+                    continue
+                circus_obstacle=(det2[2] - det2[0])
+                b = np.array([(det2[0] + (det2[2] - det2[0]) / 2), det2[3]])
+                if(b[1] < a[1]):
+                    continue
+                dist = np.linalg.norm(a - b)
+                if(dist<=(circus_target+circus_obstacle) / 1.8):
+                    print("Obstacle Dectect!!!!!")
+                    if((obstacle == -1) or (obstacle != det2[4])):
+                        obstacle = det2[4]
+                        cli.send_alert("obstacle detect")
+                        print('obstacle ', obstacle)
+                    return "OBS", flag, obstacle
     print("===========================================")
-    return ""
+    return "", flag, obstacle
 
 def alert(representational_point, his_representational_point ,right_zone, left_zone, tactile_paving, cli):
     if(his_representational_point and is_in_poly(his_representational_point, tactile_paving)):
